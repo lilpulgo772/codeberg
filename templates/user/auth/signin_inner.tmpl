@@ -51,12 +51,12 @@
 			{{end}}
 
 			{{if and .OrderedOAuth2Names .OAuth2Providers}}
-			<div class="ui attached segment">
+			<div class="ui attached segment"><details> <!-- codeberg patch: make oauth2 login invisible-->
+    		<summary>{{.locale.Tr "sign_in_with"}}</summary> <!-- codeberg patch: make oauth2 login invisible-->
 				<div class="oauth2 center">
 					<div id="oauth2-login-loader" class="ui disabled centered loader"></div>
 					<div>
 						<div id="oauth2-login-navigator">
-							<p>{{.locale.Tr "sign_in_with"}}</p>
 							{{range $key := .OrderedOAuth2Names}}
 								{{$provider := index $.OAuth2Providers $key}}
 								<a href="{{AppSubUrl}}/user/oauth2/{{$key}}">
@@ -70,7 +70,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</details></div> <!-- codeberg patch: make oauth2 login invisible-->
 			{{end}}
 			</form>
 		</div>
