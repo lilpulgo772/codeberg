@@ -53,9 +53,8 @@
 	{{end}}
 
 	{{if and .OrderedOAuth2Names .OAuth2Providers}}
-	<div class="divider divider-text">
-		{{ctx.Locale.Tr "sign_in_or"}}
-	</div>
+	<div class="attached segment"><details><!-- codeberg patch: make oauth2 login invisible -->
+    <summary>{{ctx.Locale.Tr "sign_in_with_provider" ""}}</summary><!-- codeberg patch: make oauth2 login invisible -->
 	<div id="oauth2-login-navigator" class="gt-py-2">
 		<div class="gt-df gt-fc gt-jc">
 			<div id="oauth2-login-navigator-inner" class="gt-df gt-fc gt-fw gt-ac gt-gap-3">
@@ -69,6 +68,7 @@
 			</div>
 		</div>
 	</div>
+    </details></div> <!-- codeberg patch: make oauth2 login invisible-->
 	{{end}}
 	</form>
 </div>
