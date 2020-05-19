@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"code.gitea.io/gitea/models/db"
@@ -792,6 +793,14 @@ func (c *Comment) LoadPushCommits(ctx context.Context) (err error) {
 // CreateCommentCtx creates comment with context
 func CreateCommentCtx(ctx context.Context, opts *CreateCommentOptions) (_ *Comment, err error) {
 	e := db.GetEngine(ctx)
+	// codeberg-specific
+	if opts.Type == CommentTypeComment {
+		count, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-120).And("type=0").Count(&Comment{})
+		if count > 10 {
+			return nil, fmt.Errorf("NewComment: Rate Limited " + opts.Doer.Name)
+		}
+	}
+
 	var LabelID int64
 	if opts.Label != nil {
 		LabelID = opts.Label.ID
