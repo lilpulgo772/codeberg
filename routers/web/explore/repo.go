@@ -14,6 +14,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/sitemap"
+	"code.gitea.io/gitea/modules/util"
 )
 
 const (
@@ -30,6 +31,8 @@ type RepoSearchOptions struct {
 	PageSize         int
 	OnlyShowRelevant bool
 	TplName          base.TplName
+	// codeberg: Hide mirrors from explore view
+	HideMirror util.OptionalBool
 }
 
 // RenderRepoSearch render repositories search page
@@ -96,6 +99,12 @@ func RenderRepoSearch(ctx *context.Context, opts *RepoSearchOptions) {
 	language := ctx.FormTrim("language")
 	ctx.Data["Language"] = language
 
+	// codeberg: Hide mirrors from explore view
+	var showMirror util.OptionalBool = util.OptionalBoolNone
+	if (opts.HideMirror == util.OptionalBoolTrue) && (keyword == "") {
+		showMirror = util.OptionalBoolFalse
+	}
+
 	repos, count, err = repo_model.SearchRepository(ctx, &repo_model.SearchRepoOptions{
 		ListOptions: db.ListOptions{
 			Page:     page,
@@ -112,6 +121,8 @@ func RenderRepoSearch(ctx *context.Context, opts *RepoSearchOptions) {
 		Language:           language,
 		IncludeDescription: setting.UI.SearchRepoDescription,
 		OnlyShowRelevant:   opts.OnlyShowRelevant,
+		// codeberg: Hide mirrors from explore view
+		Mirror: showMirror,
 	})
 	if err != nil {
 		ctx.ServerError("SearchRepository", err)
@@ -170,5 +181,7 @@ func Repos(ctx *context.Context) {
 		Private:          ctx.Doer != nil,
 		TplName:          tplExploreRepos,
 		OnlyShowRelevant: onlyShowRelevant,
+		// codeberg: Hide mirrors from explore view
+		HideMirror: util.OptionalBoolTrue,
 	})
 }
