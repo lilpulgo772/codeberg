@@ -15,6 +15,13 @@
 					<a href="{{$.RepoLink}}">{{.Name}}</a>
 					<a href="{{$.RepoLink}}.rss"><i class="ui grey icon tooltip ml-3" data-content="{{$.locale.Tr "rss_feed"}}" data-position="top center">{{svg "octicon-rss" 18}}</i></a>
 					<div class="labels df ac fw">
+						{{if eq .LowerName "pages"}}
+							<span class="ui basic label">
+								<a href="https://{{.Owner.Name}}.codeberg.page" target="_blank">
+									Visit Page {{svg "octicon-link-external" 16}}
+								</a>
+							</span>
+						{{end}}
 						{{if .IsTemplate}}
 							{{if .IsPrivate}}
 								<span class="ui basic label">{{$.locale.Tr "repo.desc.private_template"}}</span>
