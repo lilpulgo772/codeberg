@@ -11,6 +11,13 @@
 					<div class="gt-mx-2">/</div>
 					<a href="{{$.RepoLink}}">{{.Name}}</a>
 					<div class="labels gt-df gt-ac gt-fw">
+						{{if eq .LowerName "pages"}}
+							<span class="ui basic label">
+								<a href="https://{{.Owner.Name}}.codeberg.page" target="_blank">
+									Visit Page {{svg "octicon-link-external" 16}}
+								</a>
+							</span>
+						{{end}}
 						{{if .IsArchived}}
 							<span class="ui basic label">{{ctx.Locale.Tr "repo.desc.archived"}}</span>
 						{{end}}
