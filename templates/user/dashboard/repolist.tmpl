@@ -24,7 +24,8 @@
 
 <template id="dashboard-repo-list-template">
 	<div>
-		<div v-if="!isOrganization" class="ui two item tabable menu">
+		<codeberg-announcement-widget configuration-url="/Codeberg/Announcements/raw/branch/main/announcements.toml"></codeberg-announcement-widget>
+		<div v-if="!isOrganization" class="ui two item tabable menu" style="margin-top: 0">
 			<a :class="{item: true, active: tab === 'repos'}" @click="changeTab('repos')">{{.locale.Tr "repository"}}</a>
 			<a :class="{item: true, active: tab === 'organizations'}" @click="changeTab('organizations')">{{.locale.Tr "organization"}}</a>
 		</div>
