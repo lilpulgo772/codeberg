@@ -7,6 +7,10 @@
 		<label for="captcha">{{.locale.Tr "captcha"}}</label>
 		<input id="captcha" name="captcha" value="{{.captcha}}" autocomplete="off">
 	</div>
+	<div class="ui message flash-info"><p>
+		We are still working on an accessible Captcha alternative, but aren't there yet (state: May 2023).<br />
+		If you have difficulties solving the captcha, please contact us at <a href="mailto:contact@codeberg.org">contact@codeberg.org</a> and let us know your prefered account name.</p>
+	</div>
 {{else if eq .CaptchaType "recaptcha"}}
 	<div class="inline field required">
 		<div id="captcha" data-captcha-type="g-recaptcha" class="g-recaptcha-style" data-sitekey="{{.RecaptchaSitekey}}"></div>
