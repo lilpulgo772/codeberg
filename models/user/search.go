@@ -38,6 +38,8 @@ type SearchUserOptions struct {
 	IncludeReserved    bool
 
 	ExtraParamStrings map[string]string
+	// Codeberg-specific
+	HideNoRepos util.OptionalBool
 }
 
 func (opts *SearchUserOptions) toSearchQueryBase(ctx context.Context) *xorm.Session {
@@ -100,6 +102,11 @@ func (opts *SearchUserOptions) toSearchQueryBase(ctx context.Context) *xorm.Sess
 
 	if !opts.IsProhibitLogin.IsNone() {
 		cond = cond.And(builder.Eq{"prohibit_login": opts.IsProhibitLogin.IsTrue()})
+	}
+
+	// Codeberg specific
+	if opts.HideNoRepos.IsTrue() {
+		cond = cond.And(builder.Expr("num_repos > 0"))
 	}
 
 	e := db.GetEngine(ctx)
