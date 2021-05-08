@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/structs"
+	"code.gitea.io/gitea/modules/util"
 )
 
 const (
@@ -36,5 +37,6 @@ func Organizations(ctx *context.Context) {
 		Type:        user_model.UserTypeOrganization,
 		ListOptions: db.ListOptions{PageSize: setting.UI.ExplorePagingNum},
 		Visible:     visibleTypes,
+		HideNoRepos: util.OptionalBoolTrue,
 	}, tplExploreOrganizations)
 }

@@ -25,7 +25,7 @@ const (
 )
 
 // UserSearchDefaultSortType is the default sort type for user search
-const UserSearchDefaultSortType = "alphabetically"
+const UserSearchDefaultSortType = "recentupdate" // codeberg-specific
 
 var nullByte = []byte{0x00}
 
@@ -60,11 +60,11 @@ func RenderUserSearch(ctx *context.Context, opts *user_model.SearchUserOptions, 
 	ctx.Data["SortType"] = ctx.FormString("sort")
 	switch ctx.FormString("sort") {
 	case "newest":
+		// codeberg specific
+		opts.HideNoRepos = util.OptionalBoolFalse
 		orderBy = "`user`.id DESC"
 	case "oldest":
 		orderBy = "`user`.id ASC"
-	case "recentupdate":
-		orderBy = "`user`.updated_unix DESC"
 	case "leastupdate":
 		orderBy = "`user`.updated_unix ASC"
 	case "reversealphabetically":
@@ -73,9 +73,14 @@ func RenderUserSearch(ctx *context.Context, opts *user_model.SearchUserOptions, 
 		orderBy = "`user`.last_login_unix ASC"
 	case "reverselastlogin":
 		orderBy = "`user`.last_login_unix DESC"
-	case UserSearchDefaultSortType: // "alphabetically"
-	default:
+	case "alphabetically":
 		orderBy = "`user`.name ASC"
+	case UserSearchDefaultSortType: // "recentupdate" (codeberg)
+		fallthrough
+	default:
+		// codeberg specific
+		opts.HideNoRepos = util.OptionalBoolFalse
+		orderBy = "`user`.updated_unix DESC"
 		ctx.Data["SortType"] = UserSearchDefaultSortType
 	}
 
@@ -134,5 +139,6 @@ func Users(ctx *context.Context) {
 		ListOptions: db.ListOptions{PageSize: setting.UI.ExplorePagingNum},
 		IsActive:    util.OptionalBoolTrue,
 		Visible:     []structs.VisibleType{structs.VisibleTypePublic, structs.VisibleTypeLimited, structs.VisibleTypePrivate},
+		HideNoRepos: util.OptionalBoolTrue,
 	}, tplExploreUsers)
 }
