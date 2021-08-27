@@ -29,7 +29,11 @@
 			{{end}}
 		</div>
 		<div class="mt-3" id="repo-topics">
-		{{range .Topics}}<a class="ui repo-topic large label topic" href="{{AppSubUrl}}/explore/repos?q={{.Name}}&topic=1">{{.Name}}</a>{{end}}
+		{{range .Topics}}
+			{{if not .IsCodebergFlag}}
+				<a class="ui repo-topic large label topic" href="{{AppSubUrl}}/explore/repos?q={{.Name}}&topic=1">{{.Name}}</a>
+			{{end}}
+		{{end}}
 		{{if and .Permission.IsAdmin (not .Repository.IsArchived)}}<a id="manage_topic" class="muted">{{.locale.Tr "repo.topic.manage_topics"}}</a>{{end}}
 		</div>
 		{{end}}
@@ -56,6 +60,9 @@
 			<span id="count_prompt">{{.locale.Tr "repo.topic.count_prompt"}}</span>
 			<span id="format_prompt">{{.locale.Tr "repo.topic.format_prompt"}}</span>
 		</div>
+
+		{{template "repo/codeberg_banners" .}}
+
 		{{if .Repository.IsArchived}}
 			<div class="ui warning message">
 				{{.locale.Tr "repo.archive.title"}}
