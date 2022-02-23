@@ -18,7 +18,7 @@ func AddTableIssueContentHistory(x *xorm.Engine) error {
 		IssueID        int64              `xorm:"INDEX"`
 		CommentID      int64              `xorm:"INDEX"`
 		EditedUnix     timeutil.TimeStamp `xorm:"INDEX"`
-		ContentText    string             `xorm:"LONGTEXT"`
+		ContentText    string             `xorm:"TEXT"`
 		IsFirstCreated bool
 		IsDeleted      bool
 	}

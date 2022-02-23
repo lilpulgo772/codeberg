@@ -350,7 +350,7 @@ var migrations = []Migration{
 	// v190 -> v191
 	NewMigration("Add agit flow pull request support", v1_16.AddAgitFlowPullRequest),
 	// v191 -> v192
-	NewMigration("Alter issue/comment table TEXT fields to LONGTEXT", v1_16.AlterIssueAndCommentTextFieldsToLongText),
+	NewMigration("Alter issue/comment table TEXT fields to LONGTEXT (nop)", v1_16.AlterIssueAndCommentTextFieldsToLongText),
 	// v192 -> v193
 	NewMigration("RecreateIssueResourceIndexTable to have a primary key instead of an unique index", v1_16.RecreateIssueResourceIndexTable),
 	// v193 -> v194
