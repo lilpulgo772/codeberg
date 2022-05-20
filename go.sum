@@ -70,6 +70,8 @@ code.gitea.io/gitea-vet v0.2.2-0.20220122151748-48ebc902541b/go.mod h1:zcNbT/aJE
 code.gitea.io/sdk/gitea v0.11.3/go.mod h1:z3uwDV/b9Ls47NGukYM9XhnHtqPh/J+t40lsUrR6JDY=
 code.gitea.io/sdk/gitea v0.15.1 h1:WJreC7YYuxbn0UDaPuWIe/mtiNKTvLN8MLkaw71yx/M=
 code.gitea.io/sdk/gitea v0.15.1/go.mod h1:klY2LVI3s3NChzIk/MzMn7G1FHrfU7qd63iSMVoHRBA=
+codeberg.org/Codeberg/captcha v0.0.0-20230318130406-fb967d43ab9c h1:nQLC7+Q5abBjavxYMTgpPLQcz88t26Xup1wsj+KMLvg=
+codeberg.org/Codeberg/captcha v0.0.0-20230318130406-fb967d43ab9c/go.mod h1:8udua5pKNuvkQNeyEeFHVUugRTTTuOnGa/pFQTAeWXk=
 codeberg.org/gusted/mcaptcha v0.0.0-20220723083913-4f3072e1d570 h1:TXbikPqa7YRtfU9vS6QJBg77pUvbEb6StRdZO8t1bEY=
 codeberg.org/gusted/mcaptcha v0.0.0-20220723083913-4f3072e1d570/go.mod h1:IIAjsijsd8q1isWX8MACefDEgTQslQ4stk2AeeTt3kM=
 contrib.go.opencensus.io/exporter/aws v0.0.0-20181029163544-2befc13012d0/go.mod h1:uu1P0UCM/6RbsMrgPa98ll8ZcHM858i/AD06a9aLRCA=
@@ -86,8 +88,6 @@ gitea.com/go-chi/binding v0.0.0-20221013104517-b29891619681/go.mod h1:77TZu701zM
 gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e/go.mod h1:k2V/gPDEtXGjjMGuBJiapffAXTv76H4snSmlJRLUhH0=
 gitea.com/go-chi/cache v0.2.0 h1:E0npuTfDW6CT1yD8NMDVc1SK6IeRjfmRL2zlEsCEd7w=
 gitea.com/go-chi/cache v0.2.0/go.mod h1:iQlVK2aKTZ/rE9UcHyz9pQWGvdP9i1eI2spOpzgCrtE=
-gitea.com/go-chi/captcha v0.0.0-20211013065431-70641c1a35d5 h1:J/1i8u40TbcLP/w2w2KCkgW2PelIqYkD5UOwu8IOvVU=
-gitea.com/go-chi/captcha v0.0.0-20211013065431-70641c1a35d5/go.mod h1:hQ9SYHKdOX968wJglb/NMQ+UqpOKwW4L+EYdvkWjHSo=
 gitea.com/go-chi/session v0.0.0-20211218221615-e3605d8b28b8 h1:tJQRXgZigkLeeW9LPlps9G9aMoE6LAmqigLA+wxmd1Q=
 gitea.com/go-chi/session v0.0.0-20211218221615-e3605d8b28b8/go.mod h1:fc/pjt5EqNKgqQXYzcas1Z5L5whkZHyOvTA7OzWVJck=
 gitea.com/lunny/dingtalk_webhook v0.0.0-20171025031554-e3534c89ef96 h1:+wWBi6Qfruqu7xJgjOIrKVQGiLUZdpKYCZewJ4clqhw=

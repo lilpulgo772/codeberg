@@ -299,6 +299,9 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
+// Codeberg Patch
+replace gitea.com/go-chi/captcha => codeberg.org/Codeberg/captcha v0.0.0-20230318130406-fb967d43ab9c
+
 replace github.com/hashicorp/go-version => github.com/6543/go-version v1.3.1
 
 replace github.com/shurcooL/vfsgen => github.com/lunny/vfsgen v0.0.0-20220105142115-2c99e1ffdfa0
