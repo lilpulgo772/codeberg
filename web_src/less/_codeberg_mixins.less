@@ -1,0 +1,42 @@
+.drop-shadow (@x: 0, @y: 1px, @blur: 2px, @spread: 0, @alpha: 0.25) {
+  -webkit-box-shadow:	@x @y @blur @spread rgba(0, 0, 0, @alpha);
+  -moz-box-shadow:	@x @y @blur @spread rgba(0, 0, 0, @alpha);
+  box-shadow:		@x @y @blur @spread rgba(0, 0, 0, @alpha);
+}
+.border-radius (@radius: 5px) {
+  -webkit-border-radius: @radius;
+  -moz-border-radius:    @radius;
+  border-radius:         @radius;
+
+  -moz-background-clip:    padding;
+  -webkit-background-clip: padding-box;
+  background-clip:         padding-box;
+}
+.gradient (@startColor: #eee, @endColor: white, @percentageFirstColor: e("")) {
+  background-color: @startColor;
+  background: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+  background: -webkit-linear-gradient(top, @startColor @percentageFirstColor, @endColor);
+  background: -moz-linear-gradient(top, @startColor @percentageFirstColor, @endColor);
+  background: -ms-linear-gradient(top, @startColor @percentageFirstColor, @endColor);
+  background: -o-linear-gradient(top, @startColor @percentageFirstColor, @endColor);
+}
+.transition (@transition) {
+  -webkit-transition: @transition;
+  -moz-transition:    @transition;
+  -ms-transition:     @transition;
+  -o-transition:      @transition;
+}
+.filter (@filter) {
+  -webkit-filter: @filter;
+  filter: @filter;
+}
+.user-select (@user-select: none) {
+  -webkit-user-select: @user-select;
+  -moz-user-select: @user-select;
+  -ms-user-select: @user-select;
+  user-select: @user-select;
+}
+.display-flex() {
+  display: -webkit-flex;
+  display: flex;
+}
