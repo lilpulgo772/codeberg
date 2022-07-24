@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/models/db"
 	repo_model "code.gitea.io/gitea/models/repo"
 	user_model "code.gitea.io/gitea/models/user"
+	activities_model "code.gitea.io/gitea/models/activities"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/log"
@@ -60,8 +61,15 @@ func Home(ctx *context.Context) {
 		return
 	}
 
+	// codeberg: show about page
+	About(ctx)
+}
+
+// codeberg specific about page
+func About(ctx *context.Context) {
 	ctx.Data["PageIsHome"] = true
 	ctx.Data["IsRepoIndexerEnabled"] = setting.Indexer.RepoIndexerEnabled
+	ctx.Data["Stats"] = activities_model.GetStatistic()
 	ctx.HTML(http.StatusOK, tplHome)
 }
 
