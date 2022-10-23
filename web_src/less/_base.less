@@ -128,7 +128,8 @@
   --color-box-header: #f7f7f7;
   --color-box-body: #ffffff;
   --color-box-body-highlight: #f8f8f8;
-  --color-footer: #ffffff;
+  --color-footer: #B5DDFF;
+  --color-footer-text: var(--color-text-light);
   --color-timeline: #ececec;
   --color-input-text: #212121;
   --color-input-background: #ffffff;
@@ -1685,25 +1686,36 @@ a.ui.card:hover,
 
 footer {
   background-color: var(--color-footer);
-  border-top: 1px solid var(--color-secondary);
   width: 100%;
-  flex-basis: 40px;
-  color: var(--color-text-light);
+  color: var(--color-footer-text);
+  font-weight: 400;
+  padding: 10px;
 
-  .container {
-    width: 100vw !important;
-    padding: 0 .5rem;
-    max-width: calc(100vw - 1rem) !important;
-
-    .links > * {
-      border-left: 1px solid var(--color-secondary-dark-1);
-      padding-left: 8px;
-      margin-left: 5px;
-
-      &:first-child {
-        border-left: 0;
-      }
+  .grid {
+    display: grid;
+    grid-gap: 40px 20px;
+    padding: 30px;
+    @media @mediaMdAndUp {
+      grid-template-columns: 2fr repeat(4, 3fr);
     }
+    a, ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      margin-top: 15px;
+      line-height: 2em;
+    }
+  }
+
+  .branding img {
+    width: 100px;
+  }
+  * a {
+    color: inherit;
+  }
+
+  * b {
+    font-size: 2em;
   }
 
   .ui.language {
@@ -1713,17 +1725,9 @@ footer {
       margin-bottom: 7px;
     }
 
-    .svg {
+    .svg, .text {
       margin-right: .15em;
-      vertical-align: top;
-      margin-top: calc(2em - 16px);
-    }
-  }
-
-  .ui {
-    &.left,
-    &.right {
-      line-height: 40px;
+      vertical-align: middle;
     }
   }
 }
