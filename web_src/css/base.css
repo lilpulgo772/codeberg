@@ -145,7 +145,8 @@
   --color-box-header: #f7f7f7;
   --color-box-body: #ffffff;
   --color-box-body-highlight: #f8f8f8;
-  --color-footer: #ffffff;
+  --color-footer: #B5DDFF;
+  --color-footer-text: var(--color-text-light);
   --color-timeline: #ececec;
   --color-input-text: #212121;
   --color-input-background: #ffffff;
@@ -1821,6 +1822,53 @@ img.ui.avatar,
   font-weight: unset;
   color: var(--color-warning-text);
 }
+
+/* modified by Codeberg */
+footer {
+  background-color: var(--color-footer);
+  width: 100%;
+  color: var(--color-footer-text);
+  font-weight: 400;
+  padding: 10px;
+}
+footer .grid {
+  display: grid;
+  grid-gap: 40px 20px;
+  padding: 30px;
+}
+@media (min-width: 992px) {
+  footer .grid {
+    grid-template-columns: 2fr repeat(4, 3fr);
+  }
+}
+footer .grid a,
+footer .grid ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  margin-top: 15px;
+  line-height: 2em;
+}
+footer .branding img {
+  width: 100px;
+}
+footer * a {
+  color: inherit;
+}
+footer * b {
+  font-size: 2em;
+}
+footer .ui.language .menu {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 7px;
+}
+footer .ui.language .svg,
+footer .ui.language .text {
+  margin-right: 0.15em;
+  vertical-align: middle;
+}
+/* end custom footer */
 
 .center:not(.popup) {
   text-align: center;
