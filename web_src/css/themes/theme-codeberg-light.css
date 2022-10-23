@@ -1,3 +1,9 @@
 /* Basic styles for Codeberg */
 @import "codeberg/base-brand.css";
 
+footer, .codeberg {
+	--color-text-light-2: #73CCC6;
+	* a:hover {
+		color: var(--color-text-light-2) !important;
+	}
+}
