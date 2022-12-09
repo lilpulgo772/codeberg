@@ -1,0 +1,65 @@
+.asciidoc .left {
+  float: left;
+}
+.asciidoc .right {
+  float: right;
+}
+.asciidoc .text-left,
+.asciidoc .halign-left {
+  text-align: left;
+}
+.asciidoc .text-center,
+.asciidoc .halign-center {
+  text-align: center;
+}
+.asciidoc .text-right,
+.asciidoc .halign-right {
+  text-align: right;
+}
+.asciidoc table.frame-none {
+  border-width: 0 !important;
+}
+.asciidoc table.grid-none tr,
+.asciidoc table.grid-none th,
+.asciidoc table.grid-none td {
+  border-width: 0 !important;
+}
+.asciidoc #user-content-toctitle {
+  font-weight: bold;
+}
+.asciidoc .admonitionblock > table {
+  border: 0 !important;
+  border-radius: 0.2em;
+}
+.asciidoc .admonitionblock > table tr,
+.asciidoc .admonitionblock > table td {
+  border: 0 !important;
+}
+.asciidoc .admonitionblock > table .icon {
+  font-weight: bold;
+  border-right: 0.1em solid !important;
+  vertical-align: top;
+}
+.asciidoc .admonitionblock > table .content {
+  background-color: var(--color-body);
+}
+.asciidoc .admonitionblock.tip .icon {
+  color: var(--color-green);
+  background: linear-gradient(to left, var(--color-green), transparent 0.5em);
+}
+.asciidoc .admonitionblock.note .icon {
+  color: var(--color-blue);
+  background: linear-gradient(to left, var(--color-blue), transparent 0.5em);
+}
+.asciidoc .admonitionblock.important .icon {
+  color: var(--color-red);
+  background: linear-gradient(to left, var(--color-red), transparent 0.5em);
+}
+.asciidoc .admonitionblock.caution .icon {
+  color: var(--color-yellow);
+  background: linear-gradient(to left, var(--color-yellow), transparent 0.5em);
+}
+.asciidoc .admonitionblock.warning .icon {
+  color: var(--color-orange);
+  background: linear-gradient(to left, var(--color-orange), transparent 0.5em);
+}

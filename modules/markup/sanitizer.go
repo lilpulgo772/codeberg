@@ -100,6 +100,18 @@ func createDefaultPolicy() *bluemonday.Policy {
 	// Allow 'color' and 'background-color' properties for the style attribute on text elements.
 	policy.AllowStyles("color", "background-color").OnElements("span", "p")
 
+	// AsciiDoc: Allow classes for float-direction
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`(^| )(text-)?(left|center|right)$`)).OnElements("div")
+
+	// AsciiDoc: Allow classes for admonition blocks
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^admonitionblock (note|tip|important|caution|warning)( |$)`)).OnElements("div")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^title$`)).OnElements("div")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^(icon|content)$`)).OnElements("td")
+
+	// AsciiDoc: Allow classes for table styling: borders and horizontal alignment
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^tableblock frame-(all|ends|sides|none) grid-(all|rows|cols|none)( |$)`)).OnElements("table")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^tableblock halign-(left|center|right)( |$)`)).OnElements("th", "td")
+
 	// Allow generally safe attributes
 	generalSafeAttrs := []string{
 		"abbr", "accept", "accept-charset",
