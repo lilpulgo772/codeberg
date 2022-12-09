@@ -558,3 +558,83 @@
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
 }
+
+.asciidoc {
+  .left {
+    float: left;
+  }
+
+  .right {
+    float: right
+  }
+
+  .text-left,
+  .halign-left {
+    text-align: left;
+  }
+
+  .text-center,
+  .halign-center {
+    text-align: center;
+  }
+
+  .text-right,
+  .halign-right {
+    text-align: right;
+  }
+
+  table {
+    &.frame-none {
+      border-width: 0 !important;
+    }
+
+    &.grid-none {
+      tr,
+      th,
+      td {
+        border-width: 0 !important;
+      }
+    }
+  }
+
+  #user-content-toctitle {
+    font-weight: bold;
+  }
+
+  .admonitionblock {
+    > table {
+      border: 0 !important;
+      border-radius: 0.2em;
+
+      tr,
+      td {
+        border: 0 !important;
+      }
+
+      .icon {
+        font-weight: bold;
+        border-right: 0.1em solid !important;
+        vertical-align: top;
+      }
+
+      .content {
+        background-color: var(--color-body);
+      }
+    }
+
+    .admonition-colours() {
+      tip: var(--color-green);
+      note: var(--color-blue);
+      important: var(--color-red);
+      caution: var(--color-yellow);
+      warning: var(--color-orange);
+    }
+
+    each(.admonition-colours(), .(@colour, @class) {
+      &.@{class} .icon {
+        color: @colour;
+        background: linear-gradient(to left, @colour, transparent 0.5em);
+      }
+    })
+  }
+}
