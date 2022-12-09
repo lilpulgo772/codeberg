@@ -30,6 +30,7 @@
 @import "./markup/content.css";
 @import "./markup/codecopy.css";
 @import "./markup/asciicast.css";
+@import "./markup/asciidoc.css";
 
 @import "./chroma/base.css";
 @import "./chroma/light.css";
