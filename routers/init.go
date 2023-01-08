@@ -91,7 +91,7 @@ func syncAppConfForGit(ctx context.Context) error {
 
 	if updated {
 		log.Info("re-sync repository hooks ...")
-		mustInitCtx(ctx, repo_service.SyncRepositoryHooks)
+		// mustInitCtx(ctx, repo_service.SyncRepositoryHooks)
 
 		log.Info("re-write ssh public keys ...")
 		mustInit(asymkey_model.RewriteAllPublicKeys)
