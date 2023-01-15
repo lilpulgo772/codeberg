@@ -49,7 +49,10 @@
 	{{template "custom/extra_links" .}}
 
 	{{if not .IsSigned}}
-		<a class="item" target="_blank" rel="noopener noreferrer" href="https://forgejo.org/docs/latest/">{{.locale.Tr "help"}}</a>
+		<a class="item" target="_blank" href="https://docs.codeberg.org/getting-started/what-is-codeberg/#what-is-codeberg-e.v.%3F">About</a>
+		<a class="item" target="_blank" href="https://docs.codeberg.org/getting-started/faq/">FAQ</a>
+		<a class="item" target="_blank" href="https://docs.codeberg.org/improving-codeberg/#donate-to-codeberg">Donate</a>
+		<a class="item" target="_blank" rel="noopener noreferrer" href="https://docs.codeberg.org">{{.locale.Tr "help"}}</a>
 	{{end}}
 
 	<!-- the full dropdown menus -->
@@ -171,7 +174,7 @@
 						{{svg "octicon-tools"}}
 						{{.locale.Tr "your_settings"}}
 					</a>
-					<a class="item" target="_blank" rel="noopener noreferrer" href="https://forgejo.org/docs/latest/">
+					<a class="item" target="_blank" rel="noopener noreferrer" href="https://docs.codeberg.org">
 						{{svg "octicon-question"}}
 						{{.locale.Tr "help"}}
 					</a>
