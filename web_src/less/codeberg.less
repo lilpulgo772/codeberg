@@ -1,0 +1,22 @@
+:root {
+    --gitea-color-scheme-1: #2185d0;
+    --gitea-text-color: #FFF;
+}
+
+#navbar .ui.red.label, #navbar .ui.red.labels .label { box-shadow: 0 0 1px 1px #c82121; }
+
+* {
+	scrollbar-width: initial;
+	scrollbar-color: initial;
+}
+
+.item.brand .ui.mini.image, footer .branding img {
+	.theme-forgejo-light &, .theme-gitea & {
+		content: url('https://design.codeberg.org/logo-kit/icon.svg');
+	}
+	.theme-forgejo-auto &, .theme-auto & {
+		@media (prefers-color-scheme: light) {
+			content: url('https://design.codeberg.org/logo-kit/icon.svg');
+		}
+	}
+}
