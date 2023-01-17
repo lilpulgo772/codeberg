@@ -1,0 +1,20 @@
+:root {
+    --gitea-color-scheme-1: #2185d0;
+    --gitea-text-color: #FFF;
+}
+
+#navbar .ui.red.label, #navbar .ui.red.labels .label { box-shadow: 0 0 1px 1px #c82121; }
+
+* {
+	scrollbar-width: initial;
+	scrollbar-color: initial;
+}
+
+.theme-forgejo-light .item.brand .ui.mini.image, .theme-forgejo-light footer .branding img, .theme-gitea .item.brand .ui.mini.image, .theme-gitea footer .branding img {
+	content: url('https://design.codeberg.org/logo-kit/icon.svg');
+}
+@media (prefers-color-scheme: light) {
+	.theme-forgejo-auto .item.brand .ui.mini.image, .theme-forgejo-auto footer .branding img, .theme-auto .item.brand .ui.mini.image, .theme-auto footer .branding img {
+		content: url('https://design.codeberg.org/logo-kit/icon.svg');
+	}
+}
