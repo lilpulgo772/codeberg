@@ -132,6 +132,13 @@
 								{{end}}
 							</li>
 							{{end}}
+							{{if $.IsAdmin}}
+							<li class="follow">
+								<div class="field">
+									<div class="ui red button show-modal" data-modal="#delete-user-modal">{{.locale.Tr "admin.users.delete_account"}}</div>
+								</div>
+							</li>
+							{{end}}
 						</ul>
 					</div>
 				</div>
@@ -187,4 +194,26 @@
 	{{template "base/modal_actions_confirm" .}}
 </div>
 
+{{if $.IsAdmin}}
+<div class="ui g-modal-confirm delete modal" id="delete-user-modal">
+	<div class="header">
+		{{svg "octicon-trash"}}
+		{{.locale.Tr "settings.delete_account_title"}}
+	</div>
+	<form class="ui form" method="POST" action="/admin/users/{{.ContextUser.ID}}/delete">
+		<div class="content">
+			<p>{{.locale.Tr "settings.delete_account_desc"}}</p>
+			{{$.CsrfTokenHtml}}
+			<div class="field">
+				<div class="ui checkbox">
+					<label for="purge">{{.locale.Tr "admin.users.purge"}}</label>
+					<input name="purge" type="checkbox">
+				</div>
+				<p class="help">{{.locale.Tr "admin.users.purge_help"}}</p>
+			</div>
+		</div>
+		{{template "base/modal_actions_confirm" .}}
+	</form>
+</div>
+{{end}}
 {{template "base/footer" .}}
