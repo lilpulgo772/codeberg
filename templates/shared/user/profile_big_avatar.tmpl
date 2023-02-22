@@ -130,6 +130,13 @@
 				{{end}}
 			</li>
 			{{end}}
+			{{if $.IsAdmin}}
+			<li class="follow">
+				<div class="field">
+					<div class="ui red button show-modal" data-modal="#delete-user-modal">{{ctx.Locale.Tr "admin.users.delete_account"}}</div>
+				</div>
+			</li>
+			{{end}}
 		</ul>
 	</div>
 </div>
