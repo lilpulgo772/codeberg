@@ -97,6 +97,13 @@
 								{{end}}
 							</li>
 							{{end}}
+							{{if $.IsAdmin}}
+							<li class="follow">
+								<div class="field">
+									<div class="ui red button show-modal" data-modal="#delete-user-modal">{{.locale.Tr "admin.users.delete_account"}}</div>
+								</div>
+							</li>
+							{{end}}
 						</ul>
 					</div>
 				</div>
@@ -165,4 +172,36 @@
 		</div>
 	</div>
 </div>
+
+{{if $.IsAdmin}}
+<div class="ui small basic delete modal" id="delete-user-modal">
+	<div class="ui icon header">
+		{{svg "octicon-trash"}}
+		{{.locale.Tr "settings.delete_account_title"}}
+	</div>
+	<div class="content">
+		<p>{{.locale.Tr "settings.delete_account_desc"}}</p>
+	</div>
+	<form class="ui form" method="POST" action="/admin/users/{{.Owner.ID}}/delete">
+		{{$.CsrfTokenHtml}}
+		<div class="field">
+			<div class="ui checkbox">
+				<label for="purge">{{.locale.Tr "admin.users.purge"}}</label>
+				<input name="purge" type="checkbox">
+			</div>
+			<p class="help">{{.locale.Tr "admin.users.purge_help"}}</p>
+		</div>
+		<div class="actions">
+			<div class="ui red basic inverted cancel button">
+				{{svg "octicon-x"}}
+				{{.locale.Tr "modal.no"}}
+			</div>
+			<button class="ui green basic inverted ok button">
+				{{svg "octicon-check"}}
+				{{.locale.Tr "modal.yes"}}
+			</button>
+		</div>
+	</form>
+</div>
+{{end}}
 {{template "base/footer" .}}
