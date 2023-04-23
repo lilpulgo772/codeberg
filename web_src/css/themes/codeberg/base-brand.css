@@ -1,0 +1,21 @@
+.following.bar, #navbar {
+    /* Change navbar color scheme to match Codeberg's brand */
+    background-color: var(--color-primary);
+    border-bottom: none !important;
+}
+
+#navbar > a.item, #navbar .item {
+    /* Use white text for navbar buttons */
+    color: #fff;
+}
+#navbar-expand-toggle {
+    /* Fix contrast for the mobile menu button */
+    --color-light-border: rgba(255,255,255,0.5);
+    --color-text-light: #fff;
+}
+* {
+    /* Revert changes to browser scrollbar */
+    scrollbar-width: initial;
+    scrollbar-color: initial;
+}
+
