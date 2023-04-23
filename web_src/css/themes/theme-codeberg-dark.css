@@ -1,0 +1,7 @@
+/* Basic styles for Codeberg */
+@import "codeberg/base-brand.css";
+
+/* Arc-Green based dark theme */
+@import "theme-arc-green.css";
+@import "codeberg/dark-variables.css";
+
