@@ -285,7 +285,7 @@ func (c *Command) Run(opts *RunOpts) error {
 	}
 	defer finished()
 
-	cmd := exec.CommandContext(ctx, c.name, c.args...)
+	cmd := exec.CommandContext(ctx, "/usr/bin/nice", append([]string{"-n", "5", c.name}, c.args...)...)
 	if opts.Env == nil {
 		cmd.Env = os.Environ()
 	} else {
