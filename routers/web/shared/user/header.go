@@ -18,7 +18,7 @@ func RenderUserHeader(ctx *context.Context) {
 	tab := ctx.FormString("tab")
 	ctx.Data["TabName"] = tab
 	repo, err := repo_model.GetRepositoryByName(ctx.ContextUser.ID, ".profile")
-	if err == nil && !repo.IsEmpty {
+	if err == nil && !repo.IsEmpty && !repo.IsPrivate {
 		gitRepo, err := git.OpenRepository(ctx, repo.RepoPath())
 		if err != nil {
 			ctx.ServerError("OpenRepository", err)

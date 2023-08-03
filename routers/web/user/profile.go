@@ -98,7 +98,7 @@ func Profile(ctx *context.Context) {
 	}
 
 	repo, err := repo_model.GetRepositoryByName(ctx.ContextUser.ID, ".profile")
-	if err == nil && !repo.IsEmpty {
+	if err == nil && !repo.IsEmpty && !repo.IsPrivate {
 		gitRepo, err := git.OpenRepository(ctx, repo.RepoPath())
 		if err != nil {
 			ctx.ServerError("OpenRepository", err)
