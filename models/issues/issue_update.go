@@ -5,8 +5,10 @@ package issues
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"code.gitea.io/gitea/models/db"
 	"code.gitea.io/gitea/models/organization"
@@ -21,6 +23,7 @@ import (
 	"code.gitea.io/gitea/modules/references"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
+	"code.gitea.io/gitea/modules/util"
 
 	"xorm.io/builder"
 )
@@ -299,9 +302,26 @@ type NewIssueOptions struct {
 	IsPull      bool
 }
 
+func CodebergIssueExternalContent(opts NewIssueOptions) bool {
+	return strings.Contains(opts.Issue.Content, "http")
+}
+
 // NewIssueWithIndex creates issue with given index
 func NewIssueWithIndex(ctx context.Context, doer *user_model.User, opts NewIssueOptions) (err error) {
 	e := db.GetEngine(ctx)
+	// codeberg specific
+	if CodebergIssueExternalContent(opts) {
+		if count5m, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue)); count5m > 4 {
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 5 minutes: %w", doer.Name, count5m, util.ErrRateLimit)
+		}
+		if count1h, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue)); count1h > 6 {
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 1 hour: %w", doer.Name, count1h, util.ErrRateLimit)
+		}
+		if count1d, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue)); count1d > 20 {
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 24 hours: %w", doer.Name, count1d, util.ErrRateLimit)
+		}
+	}
+
 	opts.Issue.Title = strings.TrimSpace(opts.Issue.Title)
 
 	if opts.Issue.MilestoneID > 0 {
@@ -420,7 +440,7 @@ func NewIssue(ctx context.Context, repo *repo_model.Repository, issue *Issue, la
 		LabelIDs:    labelIDs,
 		Attachments: uuids,
 	}); err != nil {
-		if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) || IsErrNewIssueInsert(err) {
+		if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) || IsErrNewIssueInsert(err) || errors.Is(err, util.ErrRateLimit) {
 			return err
 		}
 		return fmt.Errorf("newIssue: %w", err)

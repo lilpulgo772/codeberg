@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 	"unicode/utf8"
 
 	"code.gitea.io/gitea/models/db"
@@ -769,6 +771,10 @@ func (c *Comment) LoadPushCommits(ctx context.Context) (err error) {
 	return err
 }
 
+func CodebergCommentExternalContent(opts *CreateCommentOptions) bool {
+	return strings.Contains(opts.Content, "http")
+}
+
 // CreateComment creates comment with context
 func CreateComment(ctx context.Context, opts *CreateCommentOptions) (_ *Comment, err error) {
 	ctx, committer, err := db.TxContext(ctx)
@@ -778,6 +784,18 @@ func CreateComment(ctx context.Context, opts *CreateCommentOptions) (_ *Comment,
 	defer committer.Close()
 
 	e := db.GetEngine(ctx)
+	// codeberg-specific
+	if opts.Type == CommentTypeComment && CodebergCommentExternalContent(opts) {
+		if count5m, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-300).And("type=0").Count(&Comment{}); count5m > 8 {
+			return nil, fmt.Errorf("CreateComment: %q posted %d issues in under 5 minutes: %w", opts.Doer.Name, count5m, util.ErrRateLimit)
+		}
+		if count1h, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-3600).And("type=0").Count(&Comment{}); count1h > 12 {
+			return nil, fmt.Errorf("CreateComment: %q posted %d issues in under 1 hour: %w", opts.Doer.Name, count1h, util.ErrRateLimit)
+		}
+		if count1d, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-86400).And("type=0").Count(&Comment{}); count1d > 30 {
+			return nil, fmt.Errorf("CreateComment: %q posted %d issues in under 24 hours: %w", opts.Doer.Name, count1d, util.ErrRateLimit)
+		}
+	}
 	var LabelID int64
 	if opts.Label != nil {
 		LabelID = opts.Label.ID

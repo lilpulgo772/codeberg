@@ -27,6 +27,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
+	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/api/v1/utils"
 	asymkey_service "code.gitea.io/gitea/services/asymkey"
@@ -420,7 +421,10 @@ func CreatePullRequest(ctx *context.APIContext) {
 	}
 
 	if err := pull_service.NewPullRequest(ctx, repo, prIssue, labelIDs, []string{}, pr, assigneeIDs); err != nil {
-		if errors.Is(err, user_model.ErrBlockedByUser) {
+		if errors.Is(err, util.ErrRateLimit) {
+			ctx.Error(http.StatusTooManyRequests, "ratelimit", err)
+			return
+		} else if errors.Is(err, user_model.ErrBlockedByUser) {
 			ctx.Error(http.StatusForbidden, "BlockedByUser", err)
 			return
 		} else if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) {
