@@ -1,6 +1,7 @@
 :root {
 	--color-footer: #144B49;
 	--color-footer-text: #ffffff;
+  --color-nav-hover-bg: #00000014;
 }
 
 footer .button:hover {

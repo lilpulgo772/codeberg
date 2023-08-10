@@ -85,6 +85,7 @@
     --color-secondary-bg: var(--color-secondary-light-2);
     --color-expand-button: var(--color-secondary-dark-3);
     --color-placeholder-text: var(--color-text-light-2);
+    --color-nav-hover-bg: var(--color-secondary-dark-3);
 }
 
 .ui.horizontal.segments > .segment {
