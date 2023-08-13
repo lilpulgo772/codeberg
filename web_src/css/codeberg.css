@@ -10,11 +10,11 @@
 	scrollbar-color: initial;
 }
 
-.theme-forgejo-light .item.brand .ui.mini.image, .theme-forgejo-light footer .branding img, .theme-gitea .item.brand .ui.mini.image, .theme-gitea footer .branding img {
+.theme-forgejo-light #navbar a[href="/"] > .ui.mini.image, .theme-forgejo-light footer .branding img, .theme-gitea #navbar a[href="/"] > .ui.mini.image, .theme-gitea footer .branding img {
 	content: url('https://design.codeberg.org/logo-kit/icon.svg');
 }
 @media (prefers-color-scheme: light) {
-	.theme-forgejo-auto .item.brand .ui.mini.image, .theme-forgejo-auto footer .branding img, .theme-auto .item.brand .ui.mini.image, .theme-auto footer .branding img {
+	.theme-forgejo-auto #navbar a[href="/"] .ui.mini.image, .theme-forgejo-auto footer .branding img, .theme-auto #navbar a[href="/"] > .ui.mini.image, .theme-auto footer .branding img {
 		content: url('https://design.codeberg.org/logo-kit/icon.svg');
 	}
 }
