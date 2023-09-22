@@ -514,6 +514,12 @@ func RetrieveRepoMilestonesAndAssignees(ctx *context.Context, repo *repo_model.R
 }
 
 func retrieveProjects(ctx *context.Context, repo *repo_model.Repository) {
+	// Distinguish whether the owner of the repository
+	// is an individual or an organization
+	repoOwnerType := project_model.TypeIndividual
+	if repo.Owner.IsOrganization() {
+		repoOwnerType = project_model.TypeOrganization
+	}
 	var err error
 	projects, _, err := project_model.FindProjects(ctx, project_model.SearchOptions{
 		RepoID:   repo.ID,
@@ -529,7 +535,7 @@ func retrieveProjects(ctx *context.Context, repo *repo_model.Repository) {
 		OwnerID:  repo.OwnerID,
 		Page:     -1,
 		IsClosed: util.OptionalBoolFalse,
-		Type:     project_model.TypeOrganization,
+		Type:     repoOwnerType,
 	})
 	if err != nil {
 		ctx.ServerError("GetProjects", err)
@@ -552,7 +558,7 @@ func retrieveProjects(ctx *context.Context, repo *repo_model.Repository) {
 		OwnerID:  repo.OwnerID,
 		Page:     -1,
 		IsClosed: util.OptionalBoolTrue,
-		Type:     project_model.TypeOrganization,
+		Type:     repoOwnerType,
 	})
 	if err != nil {
 		ctx.ServerError("GetProjects", err)
@@ -798,10 +804,11 @@ func RetrieveRepoMetas(ctx *context.Context, repo *repo_model.Repository, isPull
 	return labels
 }
 
-func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleFiles []string) map[string]error {
+// Tries to load and set an issue template. The first return value indicates if a template was loaded.
+func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleFiles []string) (bool, map[string]error) {
 	commit, err := ctx.Repo.GitRepo.GetBranchCommit(ctx.Repo.Repository.DefaultBranch)
 	if err != nil {
-		return nil
+		return false, nil
 	}
 
 	templateCandidates := make([]string, 0, 1+len(possibleFiles))
@@ -864,16 +871,19 @@ func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleFiles 
 		ctx.Data["label_ids"] = strings.Join(labelIDs, ",")
 		ctx.Data["Reference"] = template.Ref
 		ctx.Data["RefEndName"] = git.RefName(template.Ref).ShortName()
-		return templateErrs
+		return true, templateErrs
 	}
-	return templateErrs
+	return false, templateErrs
 }
 
 // NewIssue render creating issue page
 func NewIssue(ctx *context.Context) {
+	issueConfig, _ := issue_service.GetTemplateConfigFromDefaultBranch(ctx.Repo.Repository, ctx.Repo.GitRepo)
+	hasTemplates := issue_service.HasTemplatesOrContactLinks(ctx.Repo.Repository, ctx.Repo.GitRepo)
+
 	ctx.Data["Title"] = ctx.Tr("repo.issues.new")
 	ctx.Data["PageIsIssueList"] = true
-	ctx.Data["NewIssueChooseTemplate"] = issue_service.HasTemplatesOrContactLinks(ctx.Repo.Repository, ctx.Repo.GitRepo)
+	ctx.Data["NewIssueChooseTemplate"] = hasTemplates
 	ctx.Data["PullRequestWorkInProgressPrefixes"] = setting.Repository.PullRequest.WorkInProgressPrefixes
 	title := ctx.FormString("title")
 	ctx.Data["TitleQuery"] = title
@@ -916,7 +926,8 @@ func NewIssue(ctx *context.Context) {
 	RetrieveRepoMetas(ctx, ctx.Repo.Repository, false)
 
 	_, templateErrs := issue_service.GetTemplatesFromDefaultBranch(ctx.Repo.Repository, ctx.Repo.GitRepo)
-	if errs := setTemplateIfExists(ctx, issueTemplateKey, IssueTemplateCandidates); len(errs) > 0 {
+	templateLoaded, errs := setTemplateIfExists(ctx, issueTemplateKey, IssueTemplateCandidates)
+	if len(errs) > 0 {
 		for k, v := range errs {
 			templateErrs[k] = v
 		}
@@ -930,6 +941,12 @@ func NewIssue(ctx *context.Context) {
 	}
 
 	ctx.Data["HasIssuesOrPullsWritePermission"] = ctx.Repo.CanWrite(unit.TypeIssues)
+
+	if !issueConfig.BlankIssuesEnabled && hasTemplates && !templateLoaded {
+		// The "issues/new" and "issues/new/choose" share the same query parameters "project" and "milestone", if blank issues are disabled, just redirect to the "issues/choose" page with these parameters.
+		ctx.Redirect(fmt.Sprintf("%s/issues/new/choose?%s", ctx.Repo.Repository.Link(), ctx.Req.URL.RawQuery), http.StatusSeeOther)
+		return
+	}
 
 	ctx.HTML(http.StatusOK, tplIssueNew)
 }
@@ -2834,52 +2851,54 @@ func NewComment(ctx *context.Context) {
 
 				// check whether the ref of PR <refs/pulls/pr_index/head> in base repo is consistent with the head commit of head branch in the head repo
 				// get head commit of PR
-				prHeadRef := pull.GetGitRefName()
-				if err := pull.LoadBaseRepo(ctx); err != nil {
-					ctx.ServerError("Unable to load base repo", err)
-					return
-				}
-				prHeadCommitID, err := git.GetFullCommitID(ctx, pull.BaseRepo.RepoPath(), prHeadRef)
-				if err != nil {
-					ctx.ServerError("Get head commit Id of pr fail", err)
-					return
-				}
-
-				// get head commit of branch in the head repo
-				if err := pull.LoadHeadRepo(ctx); err != nil {
-					ctx.ServerError("Unable to load head repo", err)
-					return
-				}
-				if ok := git.IsBranchExist(ctx, pull.HeadRepo.RepoPath(), pull.BaseBranch); !ok {
-					// todo localize
-					ctx.Flash.Error("The origin branch is delete, cannot reopen.")
-					ctx.Redirect(fmt.Sprintf("%s/pulls/%d", ctx.Repo.RepoLink, pull.Index))
-					return
-				}
-				headBranchRef := pull.GetGitHeadBranchRefName()
-				headBranchCommitID, err := git.GetFullCommitID(ctx, pull.HeadRepo.RepoPath(), headBranchRef)
-				if err != nil {
-					ctx.ServerError("Get head commit Id of head branch fail", err)
-					return
-				}
-
-				err = pull.LoadIssue(ctx)
-				if err != nil {
-					ctx.ServerError("load the issue of pull request error", err)
-					return
-				}
-
-				if prHeadCommitID != headBranchCommitID {
-					// force push to base repo
-					err := git.Push(ctx, pull.HeadRepo.RepoPath(), git.PushOptions{
-						Remote: pull.BaseRepo.RepoPath(),
-						Branch: pull.HeadBranch + ":" + prHeadRef,
-						Force:  true,
-						Env:    repo_module.InternalPushingEnvironment(pull.Issue.Poster, pull.BaseRepo),
-					})
-					if err != nil {
-						ctx.ServerError("force push error", err)
+				if pull.Flow == issues_model.PullRequestFlowGithub {
+					prHeadRef := pull.GetGitRefName()
+					if err := pull.LoadBaseRepo(ctx); err != nil {
+						ctx.ServerError("Unable to load base repo", err)
 						return
+					}
+					prHeadCommitID, err := git.GetFullCommitID(ctx, pull.BaseRepo.RepoPath(), prHeadRef)
+					if err != nil {
+						ctx.ServerError("Get head commit Id of pr fail", err)
+						return
+					}
+
+					// get head commit of branch in the head repo
+					if err := pull.LoadHeadRepo(ctx); err != nil {
+						ctx.ServerError("Unable to load head repo", err)
+						return
+					}
+					if ok := git.IsBranchExist(ctx, pull.HeadRepo.RepoPath(), pull.BaseBranch); !ok {
+						// todo localize
+						ctx.Flash.Error("The origin branch is delete, cannot reopen.")
+						ctx.Redirect(fmt.Sprintf("%s/pulls/%d", ctx.Repo.RepoLink, pull.Index))
+						return
+					}
+					headBranchRef := pull.GetGitHeadBranchRefName()
+					headBranchCommitID, err := git.GetFullCommitID(ctx, pull.HeadRepo.RepoPath(), headBranchRef)
+					if err != nil {
+						ctx.ServerError("Get head commit Id of head branch fail", err)
+						return
+					}
+
+					err = pull.LoadIssue(ctx)
+					if err != nil {
+						ctx.ServerError("load the issue of pull request error", err)
+						return
+					}
+
+					if prHeadCommitID != headBranchCommitID {
+						// force push to base repo
+						err := git.Push(ctx, pull.HeadRepo.RepoPath(), git.PushOptions{
+							Remote: pull.BaseRepo.RepoPath(),
+							Branch: pull.HeadBranch + ":" + prHeadRef,
+							Force:  true,
+							Env:    repo_module.InternalPushingEnvironment(pull.Issue.Poster, pull.BaseRepo),
+						})
+						if err != nil {
+							ctx.ServerError("force push error", err)
+							return
+						}
 					}
 				}
 			}
