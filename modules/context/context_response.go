@@ -104,7 +104,11 @@ func (ctx *Context) RenderWithErr(msg string, tpl base.TplName, form any) {
 	}
 	ctx.Flash.ErrorMsg = msg
 	ctx.Data["Flash"] = ctx.Flash
-	ctx.HTML(http.StatusOK, tpl)
+	if tpl == "user/auth/signup" {
+		ctx.HTML(http.StatusUnprocessableEntity, tpl)
+	} else {
+		ctx.HTML(http.StatusOK, tpl)
+	}
 }
 
 // NotFound displays a 404 (Not Found) page and prints the given error, if any.
