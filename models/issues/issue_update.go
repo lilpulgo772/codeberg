@@ -285,9 +285,17 @@ type NewIssueOptions struct {
 func NewIssueWithIndex(ctx context.Context, doer *user_model.User, opts NewIssueOptions) (err error) {
 	e := db.GetEngine(ctx)
 	// codeberg specific
-	count, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-180).Count(new(Issue))
-	if count > 6 {
-		return fmt.Errorf("NewIssue: Rate Limited" + doer.Name)
+	count5m, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue))
+	if count5m > 1 {
+		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 5 minutes", count5m)
+	}
+	count1h, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue))
+	if count1h > 4 {
+		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 1 hour", count1h)
+	}
+	count1d, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue))
+	if count1d > 15 {
+		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 24 hours", count1d)
 	}
 
 
