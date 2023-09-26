@@ -281,23 +281,25 @@ type NewIssueOptions struct {
 	IsPull      bool
 }
 
+func CodebergIssueExternalContent(opts NewIssueOptions) bool {
+	return strings.Contains(opts.Issue.Content, "http")
+}
+
 // NewIssueWithIndex creates issue with given index
 func NewIssueWithIndex(ctx context.Context, doer *user_model.User, opts NewIssueOptions) (err error) {
 	e := db.GetEngine(ctx)
 	// codeberg specific
-	count5m, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue))
-	if count5m > 1 {
-		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 5 minutes", count5m)
+	if CodebergIssueExternalContent(opts) {
+		if count5m, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue)); count5m > 2 {
+			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 5 minutes", doer.Name, count5m)
+		}
+		if count1h, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue)); count1h > 5 {
+			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 1 hour", doer.Name, count1h)
+		}
+		if count1d, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue)); count1d > 20 {
+			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 24 hours", doer.Name, count1d)
+		}
 	}
-	count1h, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue))
-	if count1h > 4 {
-		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 1 hour", count1h)
-	}
-	count1d, err := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue))
-	if count1d > 15 {
-		return fmt.Errorf("NewIssue: " + doer.Name + " rate limited, posted %v issues in under 24 hours", count1d)
-	}
-
 
 	opts.Issue.Title = strings.TrimSpace(opts.Issue.Title)
 

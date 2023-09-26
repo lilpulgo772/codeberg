@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -776,14 +777,23 @@ func (c *Comment) LoadPushCommits(ctx context.Context) (err error) {
 	return err
 }
 
+func CodebergCommentExternalContent(opts *CreateCommentOptions) bool {
+	return strings.Contains(opts.Content, "http")
+}
+
 // CreateComment creates comment with context
 func CreateComment(ctx context.Context, opts *CreateCommentOptions) (_ *Comment, err error) {
 	e := db.GetEngine(ctx)
 	// codeberg-specific
-	if opts.Type == CommentTypeComment {
-		count, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-120).And("type=0").Count(&Comment{})
-		if count > 10 {
-			return nil, fmt.Errorf("NewComment: Rate Limited " + opts.Doer.Name)
+	if opts.Type == CommentTypeComment && CodebergCommentExternalContent(opts) {
+		if count5m, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-300).And("type=0").Count(&Comment{}); count5m > 3 {
+			return nil, fmt.Errorf("CreateComment: %q rate limited, posted %d issues in under 5 minutes", opts.Doer.Name, count5m)
+		}
+		if count1h, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-3600).And("type=0").Count(&Comment{}); count1h > 10 {
+			return nil, fmt.Errorf("CreateComment: %q rate limited, posted %d issues in under 1 hour", opts.Doer.Name, count1h)
+		}
+		if count1d, _ := e.Table("comment").Where("poster_id = ?", opts.Doer.ID).And("created_unix>?", time.Now().Unix()-86400).And("type=0").Count(&Comment{}); count1d > 30 {
+			return nil, fmt.Errorf("CreateComment: %q rate limited, posted %d issues in under 24 hours", opts.Doer.Name, count1d)
 		}
 	}
 	var LabelID int64
