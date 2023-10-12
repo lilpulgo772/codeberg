@@ -254,7 +254,7 @@ type Comment struct {
 	NewTitle         string
 	OldRef           string
 	NewRef           string
-	DependentIssueID int64
+	DependentIssueID int64 `xorm:"INDEX"`
 	DependentIssue   *Issue `xorm:"-"`
 
 	CommitID        int64
