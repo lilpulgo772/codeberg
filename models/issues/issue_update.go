@@ -292,10 +292,10 @@ func NewIssueWithIndex(ctx context.Context, doer *user_model.User, opts NewIssue
 	e := db.GetEngine(ctx)
 	// codeberg specific
 	if CodebergIssueExternalContent(opts) {
-		if count5m, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue)); count5m > 2 {
+		if count5m, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue)); count5m > 4 {
 			return fmt.Errorf("NewIssue: %q posted %d issues in under 5 minutes: %w", doer.Name, count5m, util.ErrRateLimit)
 		}
-		if count1h, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue)); count1h > 5 {
+		if count1h, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue)); count1h > 6 {
 			return fmt.Errorf("NewIssue: %q posted %d issues in under 1 hour: %w", doer.Name, count1h, util.ErrRateLimit)
 		}
 		if count1d, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue)); count1d > 20 {
