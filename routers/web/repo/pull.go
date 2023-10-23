@@ -1271,7 +1271,11 @@ func CompareAndPullRequestPost(ctx *context.Context) {
 	// instead of 500.
 
 	if err := pull_service.NewPullRequest(ctx, repo, pullIssue, labelIDs, attachments, pullRequest, assigneeIDs); err != nil {
-		if errors.Is(err, user_model.ErrBlockedByUser) {
+		if errors.Is(err, util.ErrRateLimit) {
+			ctx.Flash.Error("Ratelimit")
+			ctx.Redirect(ctx.Link)
+			return
+		} else if errors.Is(err, user_model.ErrBlockedByUser) {
 			ctx.Flash.Error(ctx.Tr("repo.pulls.blocked_by_user"))
 			ctx.Redirect(ctx.Link)
 			return

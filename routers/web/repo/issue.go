@@ -1179,7 +1179,11 @@ func NewIssuePost(ctx *context.Context) {
 	}
 
 	if err := issue_service.NewIssue(ctx, repo, issue, labelIDs, attachments, assigneeIDs); err != nil {
-		if errors.Is(err, user_model.ErrBlockedByUser) {
+		if errors.Is(err, util.ErrRateLimit) {
+			ctx.RenderWithErr("Ratelimit", tplIssueNew, form)
+			ctx.Error(http.StatusTooManyRequests)
+			return
+		} else if errors.Is(err, user_model.ErrBlockedByUser) {
 			ctx.RenderWithErr(ctx.Tr("repo.issues.blocked_by_user"), tplIssueNew, form)
 			return
 		} else if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) {
@@ -2951,6 +2955,11 @@ func NewComment(ctx *context.Context) {
 
 	comment, err := issue_service.CreateIssueComment(ctx, ctx.Doer, ctx.Repo.Repository, issue, form.Content, attachments)
 	if err != nil {
+		if errors.Is(err, util.ErrRateLimit) {
+			ctx.Flash.Error("Ratelimit")
+			ctx.Redirect(fmt.Sprintf("%s/pulls/%d", ctx.Repo.RepoLink, issue.Index))
+			return
+		}
 		ctx.ServerError("CreateIssueComment", err)
 		return
 	}

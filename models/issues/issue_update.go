@@ -5,6 +5,7 @@ package issues
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -22,6 +23,7 @@ import (
 	"code.gitea.io/gitea/modules/references"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
+	"code.gitea.io/gitea/modules/util"
 
 	"xorm.io/builder"
 )
@@ -291,13 +293,13 @@ func NewIssueWithIndex(ctx context.Context, doer *user_model.User, opts NewIssue
 	// codeberg specific
 	if CodebergIssueExternalContent(opts) {
 		if count5m, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-300).Count(new(Issue)); count5m > 2 {
-			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 5 minutes", doer.Name, count5m)
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 5 minutes: %w", doer.Name, count5m, util.ErrRateLimit)
 		}
 		if count1h, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-3600).Count(new(Issue)); count1h > 5 {
-			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 1 hour", doer.Name, count1h)
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 1 hour: %w", doer.Name, count1h, util.ErrRateLimit)
 		}
 		if count1d, _ := e.Table("issue").Where("poster_id = ?", doer.ID).And("created_unix>?", time.Now().Unix()-86400).Count(new(Issue)); count1d > 20 {
-			return fmt.Errorf("NewIssue: %q rate limited, posted %d issues in under 24 hours", doer.Name, count1d)
+			return fmt.Errorf("NewIssue: %q posted %d issues in under 24 hours: %w", doer.Name, count1d, util.ErrRateLimit)
 		}
 	}
 
@@ -419,7 +421,7 @@ func NewIssue(repo *repo_model.Repository, issue *Issue, labelIDs []int64, uuids
 		LabelIDs:    labelIDs,
 		Attachments: uuids,
 	}); err != nil {
-		if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) || IsErrNewIssueInsert(err) {
+		if repo_model.IsErrUserDoesNotHaveAccessToRepo(err) || IsErrNewIssueInsert(err) || errors.Is(err, util.ErrRateLimit) {
 			return err
 		}
 		return fmt.Errorf("newIssue: %w", err)

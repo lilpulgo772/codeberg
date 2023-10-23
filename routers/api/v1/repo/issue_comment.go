@@ -15,6 +15,7 @@ import (
 	user_model "code.gitea.io/gitea/models/user"
 	"code.gitea.io/gitea/modules/context"
 	api "code.gitea.io/gitea/modules/structs"
+	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/api/v1/utils"
 	"code.gitea.io/gitea/services/convert"
@@ -364,7 +365,9 @@ func CreateIssueComment(ctx *context.APIContext) {
 
 	comment, err := issue_service.CreateIssueComment(ctx, ctx.Doer, ctx.Repo.Repository, issue, form.Body, nil)
 	if err != nil {
-		if errors.Is(err, user_model.ErrBlockedByUser) {
+		if errors.Is(err, util.ErrRateLimit) {
+			ctx.Error(http.StatusTooManyRequests, "Ratelimit", err)
+		} else if errors.Is(err, user_model.ErrBlockedByUser) {
 			ctx.Error(http.StatusForbidden, "CreateIssueComment", err)
 		} else {
 			ctx.Error(http.StatusInternalServerError, "CreateIssueComment", err)
