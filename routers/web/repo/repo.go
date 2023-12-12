@@ -592,30 +592,9 @@ func SearchRepo(ctx *context.Context) {
 		return
 	}
 
-	// collect the latest commit of each repo
-	// at most there are dozens of repos (limited by MaxResponseItems), so it's not a big problem at the moment
-	repoBranchNames := make(map[int64]string, len(repos))
-	for _, repo := range repos {
-		repoBranchNames[repo.ID] = repo.DefaultBranch
-	}
-
-	repoIDsToLatestCommitSHAs, err := git_model.FindBranchesByRepoAndBranchName(ctx, repoBranchNames)
-	if err != nil {
-		log.Error("FindBranchesByRepoAndBranchName: %v", err)
-		return
-	}
-
-	// call the database O(1) times to get the commit statuses for all repos
-	repoToItsLatestCommitStatuses, err := git_model.GetLatestCommitStatusForPairs(ctx, repoIDsToLatestCommitSHAs, db.ListOptions{})
-	if err != nil {
-		log.Error("GetLatestCommitStatusForPairs: %v", err)
-		return
-	}
-
 	results := make([]*repo_service.WebSearchRepository, len(repos))
+	emptyCommitStatus := &git_model.CommitStatus{}
 	for i, repo := range repos {
-		latestCommitStatus := git_model.CalcCommitStatus(repoToItsLatestCommitStatuses[repo.ID])
-
 		results[i] = &repo_service.WebSearchRepository{
 			Repository: &api.Repository{
 				ID:       repo.ID,
@@ -629,8 +608,8 @@ func SearchRepo(ctx *context.Context) {
 				Link:     repo.Link(),
 				Internal: !repo.IsPrivate && repo.Owner.Visibility == api.VisibleTypePrivate,
 			},
-			LatestCommitStatus:       latestCommitStatus,
-			LocaleLatestCommitStatus: latestCommitStatus.LocaleString(ctx.Locale),
+			LatestCommitStatus:       emptyCommitStatus,
+			LocaleLatestCommitStatus: emptyCommitStatus.LocaleString(ctx.Locale),
 		}
 	}
 
