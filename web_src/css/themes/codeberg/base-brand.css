@@ -2,6 +2,7 @@
 	--color-footer: #144B49;
 	--color-footer-text: #ffffff;
   --color-nav-hover-bg: #00000014;
+  --color-nav-text: #ffffff;
 }
 
 footer .button:hover {
@@ -14,10 +15,6 @@ footer .button:hover {
     border-bottom: none !important;
 }
 
-#navbar > a.item, #navbar .item {
-    /* Use white text for navbar buttons */
-    color: #fff;
-}
 #navbar-expand-toggle {
     /* Fix contrast for the mobile menu button */
     --color-light-border: rgba(255,255,255,0.5);
