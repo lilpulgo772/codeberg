@@ -10,6 +10,7 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // ArchiveType archive types
@@ -49,13 +50,26 @@ func ToArchiveType(s string) ArchiveType {
 	return 0
 }
 
+var gitVersionAbove2_38_0 = time.Date(2023, time.November, 12, 17, 0o0, 0o0, 0o0, time.UTC)
+
 // CreateArchive create archive content to the target path
 func (repo *Repository) CreateArchive(ctx context.Context, format ArchiveType, target io.Writer, usePrefix bool, commitID string) error {
 	if format.String() == "unknown" {
 		return fmt.Errorf("unknown format: %v", format)
 	}
 
-	cmd := NewCommand(ctx, "archive")
+	cmd := NewCommandContextNoGlobals(ctx)
+	if format == TARGZ {
+		commit, err := repo.GetCommit(commitID)
+		if err != nil {
+			return fmt.Errorf("repo.GetCommit: %v", err)
+		}
+		if commit.Author.When.After(gitVersionAbove2_38_0) {
+			cmd.AddOptionValues("-c", "tar.tar.gz.command=gzip -cn")
+		}
+	}
+
+	cmd.AddArguments("archive")
 	if usePrefix {
 		cmd.AddOptionFormat("--prefix=%s", filepath.Base(strings.TrimSuffix(repo.Path, ".git"))+"/")
 	}
