@@ -2662,7 +2662,8 @@ func SearchIssues(ctx *context.Context) {
 
 	ids, total, err := issue_indexer.SearchIssues(ctx, searchOpt)
 	if err != nil {
-		ctx.Error(http.StatusInternalServerError, "SearchIssues", err.Error())
+		log.Error("SearchIssues", err.Error())
+		ctx.Error(http.StatusInternalServerError, "SearchIssues")
 		return
 	}
 	issues, err := issues_model.GetIssuesByIDs(ctx, ids, true)
