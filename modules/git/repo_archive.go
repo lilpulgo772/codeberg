@@ -64,7 +64,7 @@ func (repo *Repository) CreateArchive(ctx context.Context, format ArchiveType, t
 		if err != nil {
 			return fmt.Errorf("repo.GetCommit: %v", err)
 		}
-		if commit.Author.When.After(gitVersionAbove2_38_0) {
+		if commit.Author.When.Before(gitVersionAbove2_38_0) {
 			cmd.AddOptionValues("-c", "tar.tar.gz.command=gzip -cn")
 		}
 	}
