@@ -50,7 +50,7 @@ func ToArchiveType(s string) ArchiveType {
 	return 0
 }
 
-var gitVersionAbove2_38_0 = time.Date(2023, time.November, 12, 17, 0o0, 0o0, 0o0, time.UTC)
+var codebergSwitchedToNewChecksumAlgorithm = time.Date(2024, time.January, 12, 23, 0o0, 0o0, 0o0, time.UTC)
 
 // CreateArchive create archive content to the target path
 func (repo *Repository) CreateArchive(ctx context.Context, format ArchiveType, target io.Writer, usePrefix bool, commitID string) error {
@@ -64,7 +64,7 @@ func (repo *Repository) CreateArchive(ctx context.Context, format ArchiveType, t
 		if err != nil {
 			return fmt.Errorf("repo.GetCommit: %v", err)
 		}
-		if commit.Author.When.Before(gitVersionAbove2_38_0) {
+		if commit.Author.When.Before(codebergSwitchedToNewChecksumAlgorithm) {
 			cmd.AddOptionValues("-c", "tar.tar.gz.command=gzip -cn")
 		}
 	}
