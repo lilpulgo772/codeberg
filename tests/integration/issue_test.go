@@ -700,30 +700,73 @@ func TestIssuePinMove(t *testing.T) {
 	assert.EqualValues(t, newPosition, issue.PinOrder)
 }
 
-func TestAbsoluteReferenceURL(t *testing.T) {
+func TestGetContentHistory(t *testing.T) {
+	defer tests.AddFixtures("tests/integration/fixtures/TestGetContentHistory/")()
+	defer tests.PrepareTestEnv(t)()
+
+	issue := unittest.AssertExistsAndLoadBean(t, &issues_model.Issue{ID: 1})
+	repo := unittest.AssertExistsAndLoadBean(t, &repo_model.Repository{ID: issue.RepoID})
+	issueURL := fmt.Sprintf("%s/issues/%d", repo.FullName(), issue.Index)
+	contentHistory := unittest.AssertExistsAndLoadBean(t, &issues_model.ContentHistory{ID: 2, IssueID: issue.ID})
+	contentHistoryURL := fmt.Sprintf("%s/issues/%d/content-history/detail?comment_id=%d&history_id=%d", repo.FullName(), issue.Index, contentHistory.CommentID, contentHistory.ID)
+
+	type contentHistoryResp struct {
+		CanSoftDelete bool `json:"canSoftDelete"`
+		HistoryID     int  `json:"historyId"`
+		PrevHistoryID int  `json:"prevHistoryId"`
+	}
+
+	testCase := func(t *testing.T, session *TestSession, canDelete bool) {
+		t.Helper()
+		contentHistoryURL := contentHistoryURL + "&_csrf=" + GetCSRF(t, session, issueURL)
+
+		req := NewRequest(t, "GET", contentHistoryURL)
+		resp := session.MakeRequest(t, req, http.StatusOK)
+
+		var respJSON contentHistoryResp
+		DecodeJSON(t, resp, &respJSON)
+
+		assert.EqualValues(t, canDelete, respJSON.CanSoftDelete)
+		assert.EqualValues(t, contentHistory.ID, respJSON.HistoryID)
+		assert.EqualValues(t, contentHistory.ID-1, respJSON.PrevHistoryID)
+	}
+
+	t.Run("Anonymous", func(t *testing.T) {
+		defer tests.PrintCurrentTest(t)()
+		testCase(t, emptyTestSession(t), false)
+	})
+
+	t.Run("Another user", func(t *testing.T) {
+		defer tests.PrintCurrentTest(t)()
+		testCase(t, loginUser(t, "user8"), false)
+	})
+
+	t.Run("Repo owner", func(t *testing.T) {
+		defer tests.PrintCurrentTest(t)()
+		testCase(t, loginUser(t, "user2"), true)
+	})
+
+	t.Run("Poster", func(t *testing.T) {
+		defer tests.PrintCurrentTest(t)()
+		testCase(t, loginUser(t, "user5"), true)
+	})
+}
+
+func TestIssueReferenceURL(t *testing.T) {
 	defer tests.PrepareTestEnv(t)()
 	session := loginUser(t, "user2")
 
-	issue1 := unittest.AssertExistsAndLoadBean(t, &issues_model.Issue{ID: 1})
-	repo := unittest.AssertExistsAndLoadBean(t, &repo_model.Repository{ID: issue1.RepoID})
+	issue := unittest.AssertExistsAndLoadBean(t, &issues_model.Issue{ID: 1})
+	repo := unittest.AssertExistsAndLoadBean(t, &repo_model.Repository{ID: issue.RepoID})
 
-	req := NewRequest(t, "GET", fmt.Sprintf("%s/issues/%d", repo.FullName(), issue1.Index))
+	req := NewRequest(t, "GET", fmt.Sprintf("%s/issues/%d", repo.FullName(), issue.Index))
 	resp := session.MakeRequest(t, req, http.StatusOK)
 	htmlDoc := NewHTMLParser(t, resp.Body)
 
-	t.Run("Issue", func(t *testing.T) {
-		defer tests.PrintCurrentTest(t)()
+	// the "reference" uses relative URLs, then JS code will convert them to absolute URLs for current origin, in case users are using multiple domains
+	ref, _ := htmlDoc.Find(`.timeline-item.comment.first .reference-issue`).Attr("data-reference")
+	assert.EqualValues(t, "/user2/repo1/issues/1#issue-1", ref)
 
-		referenceURL, ok := htmlDoc.Find(".reference-issue").Attr("data-reference")
-		assert.True(t, ok)
-		assert.EqualValues(t, setting.AppURL+"user2/repo1/issues/1#issue-1", referenceURL)
-	})
-
-	t.Run("Comment", func(t *testing.T) {
-		defer tests.PrintCurrentTest(t)()
-
-		referenceURL, ok := htmlDoc.Find(`[id^="issuecomment"] .reference-issue`).Attr("data-reference")
-		assert.True(t, ok)
-		assert.EqualValues(t, setting.AppURL+"user2/repo1/issues/1#issuecomment-2", referenceURL)
-	})
+	ref, _ = htmlDoc.Find(`.timeline-item.comment:not(.first) .reference-issue`).Attr("data-reference")
+	assert.EqualValues(t, "/user2/repo1/issues/1#issuecomment-2", ref)
 }

@@ -55,20 +55,36 @@ func (f *GitlabDownloaderFactory) GitServiceType() structs.GitServiceType {
 	return structs.GitlabService
 }
 
+type gitlabIIDResolver struct {
+	maxIssueIID int64
+	frozen      bool
+}
+
+func (r *gitlabIIDResolver) recordIssueIID(issueIID int) {
+	if r.frozen {
+		panic("cannot record issue IID after pull request IID generation has started")
+	}
+	r.maxIssueIID = max(r.maxIssueIID, int64(issueIID))
+}
+
+func (r *gitlabIIDResolver) generatePullRequestNumber(mrIID int) int64 {
+	r.frozen = true
+	return r.maxIssueIID + int64(mrIID)
+}
+
 // GitlabDownloader implements a Downloader interface to get repository information
 // from gitlab via go-gitlab
-// - maxIssueNumber is the maximum issue number seen, updated in GetIssues() to ensure PR and Issue numbers do not overlap,
+// - issueCount is incremented in GetIssues() to ensure PR and Issue numbers do not overlap,
 // because Gitlab has individual Issue and Pull Request numbers.
-// Note that because some issue numbers may be skipped, this number may be greater than the total number of issues
 type GitlabDownloader struct {
 	base.NullDownloader
-	ctx            context.Context
-	client         *gitlab.Client
-	baseURL        string
-	repoID         int
-	repoName       string
-	maxIssueNumber int64
-	maxPerPage     int
+	ctx         context.Context
+	client      *gitlab.Client
+	baseURL     string
+	repoID      int
+	repoName    string
+	iidResolver gitlabIIDResolver
+	maxPerPage  int
 }
 
 // NewGitlabDownloader creates a gitlab Downloader via gitlab API
@@ -451,8 +467,8 @@ func (g *GitlabDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, er
 			Context:      gitlabIssueContext{IsMergeRequest: false},
 		})
 
-		// update maxIssueNumber, to be used in GetPullRequests()
-		g.maxIssueNumber = max(g.maxIssueNumber, int64(issue.IID))
+		// record the issue IID, to be used in GetPullRequests()
+		g.iidResolver.recordIssueIID(issue.IID)
 	}
 
 	return allIssues, len(issues) < perPage, nil
@@ -595,8 +611,8 @@ func (g *GitlabDownloader) GetPullRequests(page, perPage int) ([]*base.PullReque
 			awardPage++
 		}
 
-		// Add the PR ID to the Issue Count because PR and Issues share ID space in Gitea
-		newPRNumber := g.maxIssueNumber + int64(pr.IID)
+		// Generate new PR Numbers by the known Issue Numbers, because they share the same number space in Gitea, but they are independent in Gitlab
+		newPRNumber := g.iidResolver.generatePullRequestNumber(pr.IID)
 
 		allPRs = append(allPRs, &base.PullRequest{
 			Title:          pr.Title,

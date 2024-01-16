@@ -48,10 +48,6 @@ const (
 
 // AutoSignIn reads cookie and try to auto-login.
 func AutoSignIn(ctx *context.Context) (bool, error) {
-	if !db.HasEngine {
-		return false, nil
-	}
-
 	authCookie := ctx.GetSiteCookie(setting.CookieRememberName)
 	if len(authCookie) == 0 {
 		return false, nil
@@ -153,7 +149,11 @@ func checkAutoLogin(ctx *context.Context) bool {
 
 	if isSucceed {
 		middleware.DeleteRedirectToCookie(ctx.Resp)
-		ctx.RedirectToFirst(redirectTo, setting.AppSubURL+string(setting.LandingPageURL))
+		nextRedirectTo := setting.AppSubURL + string(setting.LandingPageURL)
+		if setting.LandingPageURL == setting.LandingPageLogin {
+			nextRedirectTo = setting.AppSubURL + "/" // do not cycle-redirect to the login page
+		}
+		ctx.RedirectToFirst(redirectTo, nextRedirectTo)
 		return true
 	}
 
